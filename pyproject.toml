@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "entity-embed-eval"
+version = "0.1.0"
+description = "Multimodal entity representation and embedding evaluation engine"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.100.0",
+    "uvicorn>=0.23.0",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=7.0.0",
+    "httpx>=0.24.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
