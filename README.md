@@ -189,16 +189,45 @@ if not report.is_compliant:
 - Built-in patterns cover standard structured identifiers (MRN, SSN, telephone numbers, emails, Banner/Student IDs, grade performance records).
 - Unstructured narrative disclosures may require custom regex patterns or specialized Named Entity Recognition (NER) models for edge-case coverage.
 
-### Run HTTP Service
+### Verify-and-Repair Quality Loop
 
-```bash
-uvicorn entity_embed_eval.service:app --host 0.0.0.0 --port 8000
+The `verify_repair` module evaluates entity payloads and representation vectors against a declarative weighted rubric (`rubric.json`). Faults are scored on a 0–100 scale against an 80-point pass threshold. Mechanical defects are deterministically repaired up to 3 rounds and logged to an immutable JSONL audit ledger. Non-mechanical defects (such as missing text or unnormalized zero vectors) are reported for human review without fabrication.
+
+#### Rubric Specification
+
+| Check Name | Weight | Mechanical | Description |
+|:---|:---:|:---:|:---|
+| `required_envelope` | 20 | Yes | Required fields (`id`, `text`, `entity_type`, `tags`) present |
+| `text_formatting` | 20 | Yes | Text sanitized, stripped of irregular whitespace & control characters |
+| `vector_dimension` | 20 | No | Embedding vector length matches configured dimension (64 elements) |
+| `vector_unit_norm` | 20 | Yes | Vector L2 norm equals 1.0 within tolerance (+/- 0.005) |
+| `score_bounds` | 20 | Yes | Cosine similarity or relevance score is within `[-1.0, 1.0]` |
+
+#### Before & After Repair Example
+
+```python
+from entity_embed_eval import verify_output, repair_output
+
+# Before: Broken raw fixture scoring 20/100 (Threshold: 80)
+broken_payload = {
+    "id": "e_raw_901",
+    "text": "   Pipeline data ingestion staging table   \n",
+    "dim": 64,
+    "vector": [2.5] * 64,  # unnormalized (norm = 20.0)
+    "score": 2.4,          # out-of-range score > 1.0
+}
+
+initial_score = verify_output(broken_payload)
+print(f"Before Repair Score: {initial_score.score}/100 (Passed: {initial_score.passed})")
+# Output: Before Repair Score: 20/100 (Passed: False)
+
+# Run automated mechanical repair loop (logs to audit_ledger.jsonl)
+result = repair_output(broken_payload, ledger_path="audit_ledger.jsonl", max_rounds=3)
+print(f"After Repair Score: {result.final_score}/100 (Passed: {result.passed}) in {result.rounds} round(s)")
+print(f"Repaired Fields: {result.repaired_fields}")
+# Output: After Repair Score: 100/100 (Passed: True) in 1 round(s)
+# Repaired Fields: ['entity_type', 'score', 'tags', 'text', 'vector']
 ```
-
-- Health check: `GET http://localhost:8000/health`
-- Embed entity: `POST http://localhost:8000/embed`
-- Pairwise similarity: `POST http://localhost:8000/similarity`
-- Run evaluation: `POST http://localhost:8000/evaluate`
 
 ---
 

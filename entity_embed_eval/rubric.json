@@ -1,0 +1,36 @@
+{
+  "rubric_name": "entity_embed_eval_rubric",
+  "threshold": 80,
+  "checks": [
+    {
+      "name": "required_envelope",
+      "weight": 20,
+      "mechanical": true,
+      "description": "Required fields 'id', 'text', 'entity_type', and 'tags' present in payload"
+    },
+    {
+      "name": "text_formatting",
+      "weight": 20,
+      "mechanical": true,
+      "description": "Text is non-empty, stripped of unformatted whitespace, and properly sanitized"
+    },
+    {
+      "name": "vector_dimension",
+      "weight": 20,
+      "mechanical": false,
+      "description": "Embedding vector matches expected dimension (64 elements)"
+    },
+    {
+      "name": "vector_unit_norm",
+      "weight": 20,
+      "mechanical": true,
+      "description": "Embedding vector L2 norm equals 1.0 within tolerance (+/- 0.005)"
+    },
+    {
+      "name": "score_bounds",
+      "weight": 20,
+      "mechanical": true,
+      "description": "Cosine similarity or relevance score is within [-1.0, 1.0]"
+    }
+  ]
+}
