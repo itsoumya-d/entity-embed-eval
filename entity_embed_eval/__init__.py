@@ -16,6 +16,14 @@ from .compliance import (
     RegulatoryComplianceAuditor,
     DEFAULT_COMPLIANCE_RULES,
 )
+from .verify_repair import (
+    CheckResult,
+    VerificationScore,
+    RepairResult,
+    load_rubric,
+    verify_output,
+    repair_output,
+)
 
 __all__ = [
     "Entity",
@@ -34,4 +42,10 @@ __all__ = [
     "ComplianceAuditReport",
     "RegulatoryComplianceAuditor",
     "DEFAULT_COMPLIANCE_RULES",
+    "CheckResult",
+    "VerificationScore",
+    "RepairResult",
+    "load_rubric",
+    "verify_output",
+    "repair_output",
 ]
