@@ -229,6 +229,40 @@ print(f"Repaired Fields: {result.repaired_fields}")
 # Repaired Fields: ['entity_type', 'score', 'tags', 'text', 'vector']
 ```
 
+### Partner Data Schema Adaptation & Diagnostics
+
+Forward-deployed field engineering frequently integrates with decentralized partner data systems where records have missing attributes, heterogenous column namings, and inconsistent types. The `PartnerSchemaAdapter` diagnoses partner dataset completeness, isolates type discrepancies, and maps heterogenous records into canonical `Entity` structures for downstream semantic embedding and evaluation.
+
+#### Runnable Example
+
+```python
+from entity_embed_eval import PartnerSchemaAdapter
+
+adapter = PartnerSchemaAdapter(default_entity_type="field_record")
+
+# Raw decentralized partner data
+partner_records = [
+    {"record_uid": "NGO-101", "survey_notes": "Distributed micro-grant seed funds", "village": "North Valley", "labels": "finance,grant"},
+    {"record_uid": "NGO-102", "survey_notes": "Irrigation canal water access verified", "village": "East Plain", "labels": "water,infra"}
+]
+
+# 1. Run diagnostic schema audit
+diagnostics = adapter.diagnose_schema(partner_records, required_fields=["record_uid", "survey_notes"])
+print(f"Completeness: {diagnostics.completeness_score:.1%} | Ready: {diagnostics.ready_for_ingestion}")
+
+# 2. Adapt into canonical entities
+entities = adapter.adapt_records(
+    partner_records,
+    field_mapping={"id": "record_uid", "text": "survey_notes", "tags": "labels"}
+)
+print(f"Adapted {len(entities)} canonical entities. First entity ID: {entities[0].id}")
+```
+
+#### What is Not Covered Yet
+
+- Automatic schema inference across deeply nested arbitrary JSON structures without user-supplied field mappings.
+- Streaming real-time Kafka or CDC-based schema evolution tracking across multi-region distributed clusters.
+
 ---
 
 ## 5. License

@@ -1,6 +1,6 @@
 """FastAPI service exposing entity embedding extraction and evaluation endpoints."""
 
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 
@@ -11,6 +11,7 @@ from .evaluation import (
     evaluate_embeddings,
     get_default_benchmark_dataset,
 )
+from .partner_adapter import FieldDiagnosticReport, PartnerSchemaAdapter
 
 app = FastAPI(
     title="Entity Representation & Embedding Evaluation API",
@@ -100,3 +101,43 @@ def run_evaluation(req: Optional[EvaluationRequest] = None):
     dataset = get_default_benchmark_dataset()
     result = evaluate_embeddings(engine, dataset, similarity_threshold=threshold)
     return result
+
+
+class PartnerDiagnoseRequest(BaseModel):
+    records: List[Dict[str, Any]]
+    required_fields: Optional[List[str]] = None
+
+
+class PartnerAdaptRequest(BaseModel):
+    records: List[Dict[str, Any]]
+    field_mapping: Dict[str, str]
+    default_values: Optional[Dict[str, Any]] = None
+    drop_invalid: bool = False
+
+
+@app.post("/partner/diagnose")
+def diagnose_partner_schema_endpoint(req: PartnerDiagnoseRequest):
+    adapter = PartnerSchemaAdapter()
+    return adapter.diagnose_schema(req.records, required_fields=req.required_fields)
+
+
+@app.post("/partner/adapt")
+def adapt_partner_records_endpoint(req: PartnerAdaptRequest):
+    adapter = PartnerSchemaAdapter()
+    adapted = adapter.adapt_records(
+        req.records,
+        field_mapping=req.field_mapping,
+        default_values=req.default_values,
+        drop_invalid=req.drop_invalid,
+    )
+    return [
+        {
+            "id": e.id,
+            "text": e.text,
+            "entity_type": e.entity_type,
+            "tags": e.tags,
+            "metadata": e.metadata,
+        }
+        for e in adapted
+    ]
+
