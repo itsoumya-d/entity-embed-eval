@@ -24,6 +24,7 @@ from .verify_repair import (
     verify_output,
     repair_output,
 )
+from .partner_adapter import FieldDiagnosticReport, PartnerSchemaAdapter
 
 __all__ = [
     "Entity",
@@ -48,4 +49,6 @@ __all__ = [
     "load_rubric",
     "verify_output",
     "repair_output",
+    "FieldDiagnosticReport",
+    "PartnerSchemaAdapter",
 ]
