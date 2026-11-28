@@ -8,6 +8,14 @@ from .responsible_ai import (
     DeploymentGateReport,
     ResponsibleAIGate,
 )
+from .compliance import (
+    ComplianceDomain,
+    ComplianceRule,
+    AuditViolation,
+    ComplianceAuditReport,
+    RegulatoryComplianceAuditor,
+    DEFAULT_COMPLIANCE_RULES,
+)
 
 __all__ = [
     "Entity",
@@ -20,5 +28,10 @@ __all__ = [
     "DeploymentCheckResult",
     "DeploymentGateReport",
     "ResponsibleAIGate",
+    "ComplianceDomain",
+    "ComplianceRule",
+    "AuditViolation",
+    "ComplianceAuditReport",
+    "RegulatoryComplianceAuditor",
+    "DEFAULT_COMPLIANCE_RULES",
 ]
-
