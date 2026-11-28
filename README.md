@@ -161,6 +161,34 @@ else:
 - Safety verification performs lexical and pattern-based prohibited term scanning; domain-specific external classifier APIs should be chained for nuanced toxic sentiment.
 - Groundedness evaluation measures lexical token alignment; semantic NLI models can be plugged in when cross-lingual generation is required.
 
+### Regulatory Compliance Audit Gate
+
+The `RegulatoryComplianceAuditor` evaluates entity representations and RAG contexts against regulatory compliance standards (such as healthcare HIPAA Safe Harbor 18-identifiers and educational FERPA record constraints) prior to embedding indexing or model context ingestion.
+
+```python
+from entity_embed_eval import Entity, RegulatoryComplianceAuditor, ComplianceDomain
+
+# Initialize auditor for regulated domain
+auditor = RegulatoryComplianceAuditor(domain=ComplianceDomain.HEALTHCARE_HIPAA)
+
+entities = [
+    Entity(id="e1", text="Patient protocol: follow up scheduled for clinical evaluation"),
+    Entity(id="e2", text="Patient MRN-8472910 with SSN 123-45-6789 admitted for care"),
+]
+
+# Run pre-indexing compliance evaluation
+report = auditor.audit_entities(entities)
+if not report.is_compliant:
+    print(f"Compliance violations detected: {report.violation_count}")
+    # Deterministically tokenize and redact sensitive identifiers
+    safe_entities, redaction_count = auditor.sanitize_and_redact(entities)
+    print(f"Redacted {redaction_count} protected tokens; sanitized entities ready for embedding.")
+```
+
+**Scope & Limitations**:
+- Built-in patterns cover standard structured identifiers (MRN, SSN, telephone numbers, emails, Banner/Student IDs, grade performance records).
+- Unstructured narrative disclosures may require custom regex patterns or specialized Named Entity Recognition (NER) models for edge-case coverage.
+
 ### Run HTTP Service
 
 ```bash
