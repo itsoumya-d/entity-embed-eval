@@ -125,6 +125,42 @@ print(f"Precision: {result.precision}")
 print(f"Improvement over baseline: +{result.improvement_pct}%")
 ```
 
+### Responsible AI Deployment Checks
+
+The `ResponsibleAIGate` embeds automated safety, hallucination drift, and demographic fairness parity gates directly into model deployment workflows.
+
+```python
+from entity_embed_eval import Entity, ResponsibleAIGate, PolicyConfig
+
+# Configure deployment policy thresholds
+policy = PolicyConfig(
+    max_toxicity=0.05,
+    min_groundedness=0.75,
+    max_demographic_disparity=0.15,
+)
+gate = ResponsibleAIGate(policy=policy)
+
+# Validate candidate entity outputs against policy guardrails
+entities = [
+    Entity(id="doc_1", text="Automated data lake orchestration with cloud storage"),
+]
+report = gate.evaluate_deployment(
+    entities=entities,
+    context_sources=["Cloud storage data lake orchestration manual"],
+    sample_output="Automated data lake orchestration on cloud storage",
+    group_scores={"tier_1": 0.90, "tier_2": 0.86},
+)
+
+if not report.is_approved:
+    print(f"Deployment blocked: {report.failures}")
+else:
+    print("Deployment approved: all Responsible AI verification checks passed.")
+```
+
+**Scope & Limitations**:
+- Safety verification performs lexical and pattern-based prohibited term scanning; domain-specific external classifier APIs should be chained for nuanced toxic sentiment.
+- Groundedness evaluation measures lexical token alignment; semantic NLI models can be plugged in when cross-lingual generation is required.
+
 ### Run HTTP Service
 
 ```bash
